@@ -3,7 +3,7 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+  const CLAUDE_API_KEY = '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';
 
   try {
     const body = JSON.parse(event.body);
