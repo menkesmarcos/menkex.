@@ -189,6 +189,28 @@
   .error-toast{position:absolute;bottom:90px;left:16px;right:16px;background:#C62828;color:#fff;border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;z-index:200;display:none;animation:slide-up 0.3s ease}
   @keyframes slide-up{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 
+  /* TICKET DETAIL MODAL */
+  .ticket-modal-bg{position:absolute;inset:0;z-index:150;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end}
+  .ticket-modal-bg.hidden{display:none}
+  .ticket-modal{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)}
+  .tm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
+  .tm-title{font-size:17px;font-weight:600}
+  .tm-close{background:var(--surface2);border:none;width:32px;height:32px;border-radius:16px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .tm-img{width:100%;max-height:220px;object-fit:contain;background:#f0f0eb;border-radius:0}
+  .tm-body{padding:16px 20px}
+  .tm-field{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+  .tm-field:last-child{border-bottom:none}
+  .tm-label{font-size:12px;color:var(--text2);flex-shrink:0;margin-right:12px}
+  .tm-value{font-size:14px;font-weight:500;color:var(--text);text-align:right;word-break:break-word;max-width:65%}
+  .tm-value.mono{font-family:'DM Mono',monospace}
+  .tm-value.green{color:#2E7D32}
+  .tm-value.accent{color:var(--accent)}
+  .tm-reason{background:rgba(108,99,255,0.08);border-radius:10px;padding:12px 14px;margin:12px 0;border-left:3px solid var(--accent)}
+  .tm-reason-label{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+  .tm-reason-text{font-size:13px;color:var(--text2);line-height:1.5}
+  .tm-cat-select{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--accent);background:var(--surface);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);margin-top:8px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236C63FF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  .tm-save-cat{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px}
+
   /* IVA colors */
   .iva-info{background:rgba(62,198,224,0.1);border-radius:8px;padding:10px 16px;border:1px solid rgba(62,198,224,0.2);margin-top:8px}
   .iva-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
@@ -331,33 +353,33 @@
     </div>
   </div>
 
-  <!-- SCANNER OVERLAY -->
-  <div class="overlay hidden" id="scanner-overlay">
-    <div class="overlay-header">
-      <span class="overlay-title">Escanear ticket</span>
-      <button class="overlay-close" onclick="closeScanner()">✕</button>
-    </div>
-    <div class="scan-area">
-      <div class="scan-guide">
-        <div class="scan-corner-piece tl"></div>
-        <div class="scan-corner-piece tr"></div>
-        <div class="scan-corner-piece bl"></div>
-        <div class="scan-corner-piece br"></div>
-        <div class="scan-inner">
-          <div class="scan-beam"></div>
-          <div class="scan-hint">Coloca el ticket dentro del marco</div>
+  <!-- SCANNER OVERLAY - simplified, no black camera preview -->
+  <div class="overlay hidden" id="scanner-overlay" style="background:rgba(0,0,0,0.85);justify-content:flex-end">
+    <div style="background:var(--surface);border-radius:24px 24px 0 0;width:100%;padding:24px 20px 40px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div>
+          <div style="font-size:18px;font-weight:600;color:var(--text)">Añadir ticket</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">¿Cómo quieres subir el ticket?</div>
         </div>
+        <button class="tm-close" onclick="closeScanner()">✕</button>
       </div>
-    </div>
-    <div class="scan-actions">
-      <button class="btn-scan" onclick="triggerCameraCapture()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        📷 Hacer foto
-      </button>
-      <button class="btn-scan" style="background:rgba(255,255,255,0.15);margin-top:0" onclick="triggerGallery()">
-        🖼️ Subir de galería
-      </button>
-      <button class="btn-outline" onclick="closeScanner()">Cancelar</button>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="btn-scan" onclick="triggerCameraCapture()" style="padding:18px;font-size:16px;border-radius:14px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:28px">📷</span>
+          <div style="text-align:left">
+            <div style="font-weight:600">Hacer foto ahora</div>
+            <div style="font-size:12px;opacity:0.8;font-weight:400">Abre la cámara directamente</div>
+          </div>
+        </button>
+        <button onclick="triggerGallery()" style="padding:18px;font-size:16px;border-radius:14px;display:flex;align-items:center;gap:12px;background:var(--surface2);border:1.5px solid var(--border);cursor:pointer;font-family:DM Sans,sans-serif">
+          <span style="font-size:28px">🖼️</span>
+          <div style="text-align:left">
+            <div style="font-weight:600;color:var(--text)">Subir de galería</div>
+            <div style="font-size:12px;color:var(--text2);font-weight:400">Elige una foto existente</div>
+          </div>
+        </button>
+        <button class="btn-outline" onclick="closeScanner()" style="padding:14px;font-size:15px;border-radius:14px;color:var(--text2)">Cancelar</button>
+      </div>
     </div>
   </div>
 
@@ -388,6 +410,17 @@
   </div>
 
   <div class="error-toast" id="error-toast"></div>
+  <!-- TICKET DETAIL MODAL -->
+  <div class="ticket-modal-bg hidden" id="ticket-detail-modal">
+    <div class="ticket-modal">
+      <div class="tm-header">
+        <div class="tm-title" id="tm-title">Detalle del ticket</div>
+        <button class="tm-close" onclick="closeTicketModal()">✕</button>
+      </div>
+      <div id="tm-content"></div>
+    </div>
+  </div>
+
   <input type="file" id="file-input-camera" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="file-input-gallery" accept="image/*" style="display:none">
 </div>
@@ -426,6 +459,9 @@ let pendingImageUrl = null;
 function init() {
   renderUserList();
   document.getElementById('file-input-camera').addEventListener('change', handleFile);
+  document.getElementById('ticket-detail-modal').addEventListener('click', e => {
+    if (e.target.id === 'ticket-detail-modal') closeTicketModal();
+  });
   document.getElementById('file-input-gallery').addEventListener('change', handleFile);
 }
 
@@ -532,7 +568,7 @@ function ticketRowHtml(t) {
   const imgHtml = t.imageDataUrl
     ? `<img src="${t.imageDataUrl}" style="width:46px;height:46px;object-fit:cover;border-radius:10px">`
     : c.emoji;
-  return `<div class="ticket-card">
+  return `<div class="ticket-card" onclick="openTicketDetail('${t.ref}')">
     <div class="ticket-thumb">${imgHtml}</div>
     <div class="ticket-info">
       <div class="ticket-name">${t.nombre || 'Sin nombre'}</div>
@@ -720,6 +756,13 @@ Responde ÚNICAMENTE con JSON válido sin markdown ni texto extra:
 - supermercado: 21%
 - otros: 50%
 
+ACLARACIÓN SOBRE IVA DEDUCIBLE:
+- iva_deducible_pct es el PORCENTAJE DEL IVA SOPORTADO que la empresa puede deducir fiscalmente
+- Ejemplo: ticket restaurante €100 + IVA 10% = €10 IVA. Deducible 50% = €5 deducibles
+- Ejemplo: ticket gasolina €100 + IVA 21% = €21 IVA. Deducible 100% = €21 deducibles
+- Esto NO es el porcentaje del total, sino del IVA específicamente
+- Para cosméticos/farmacia/productos personales → categoría "otros", deducible 50% porque no es gasto empresarial 100% justificado
+
 REGLA FINAL: Si el ticket es ambiguo, indica en "razonamiento" exactamente qué texto del ticket te llevó a esa categoría.`;
 
   const resp = await fetch('/.netlify/functions/claude', {
@@ -845,6 +888,73 @@ function saveTicket() {
 function today() {
   const d = new Date();
   return d.getDate().toString().padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+}
+
+// ── TICKET DETAIL MODAL ──────────────────────────────────────
+function openTicketDetail(ref) {
+  const t = tickets.find(t => t.ref === ref);
+  if (!t) return;
+  const c = CATEGORIES[t.categoria] || CATEGORIES.otros;
+  const ivaDeducEur = (t.iva_deducible_eur || 0).toFixed(2);
+  const catOptions = Object.entries(CATEGORIES).map(([k,v]) =>
+    `<option value="${k}" ${t.categoria===k?'selected':''}>${v.emoji} ${v.label}</option>`
+  ).join('');
+
+  document.getElementById('tm-title').textContent = t.nombre || 'Ticket';
+  document.getElementById('tm-content').innerHTML = `
+    ${t.imageDataUrl ? `<img class="tm-img" src="${t.imageDataUrl}" alt="ticket">` : ''}
+    <div class="tm-body">
+      ${[
+        ['Referencia', t.ref, 'mono accent'],
+        ['Establecimiento', t.nombre || '—', ''],
+        ['Concepto', t.concepto || '—', ''],
+        ['Fecha', t.fecha || '—', ''],
+        ['Base imponible', '€' + (t.base_imponible||0).toFixed(2), 'mono'],
+        ['IVA (' + (t.iva_porcentaje||0) + '%)', '€' + (t.iva_importe||0).toFixed(2), 'mono'],
+        ['Total pagado', '€' + (t.importe_total||0).toFixed(2), 'mono'],
+        ['IVA deducible (' + (t.iva_deducible_pct||0) + '%)', '€' + ivaDeducEur, 'mono green'],
+      ].map(([l,v,cls]) => `<div class="tm-field"><span class="tm-label">${l}</span><span class="tm-value ${cls}">${v}</span></div>`).join('')}
+
+      ${t.razonamiento ? `<div class="tm-reason">
+        <div class="tm-reason-label">🤖 Motivo de categorización</div>
+        <div class="tm-reason-text">${t.razonamiento}</div>
+      </div>` : ''}
+
+      <div style="margin-top:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Cambiar categoría</div>
+        <div style="position:relative">
+          <select class="tm-cat-select" id="cat-select-${t.ref}">${catOptions}</select>
+        </div>
+        <button class="tm-save-cat" onclick="saveCategory('${t.ref}')">Guardar categoría</button>
+      </div>
+    </div>`;
+
+  document.getElementById('ticket-detail-modal').classList.remove('hidden');
+}
+
+function closeTicketModal() {
+  document.getElementById('ticket-detail-modal').classList.add('hidden');
+}
+
+function saveCategory(ref) {
+  const select = document.getElementById('cat-select-' + ref);
+  if (!select) return;
+  const newCat = select.value;
+  const idx = tickets.findIndex(t => t.ref === ref);
+  if (idx === -1) return;
+  tickets[idx].categoria = newCat;
+  // recalculate iva deducible based on new category
+  const cat = CATEGORIES[newCat] || CATEGORIES.otros;
+  tickets[idx].iva_deducible_pct = cat.iva_deducible;
+  tickets[idx].iva_deducible_eur = (tickets[idx].iva_importe || 0) * cat.iva_deducible / 100;
+  localStorage.setItem('tickets_v2', JSON.stringify(tickets));
+  closeTicketModal();
+  // refresh current view
+  const activeScreen = document.querySelector('.screen:not(.hidden)');
+  if (activeScreen?.id === 'home-screen') renderHome();
+  if (activeScreen?.id === 'tickets-screen') renderTicketsList();
+  if (activeScreen?.id === 'stats-screen') renderStats();
+  showToast('✓ Categoría actualizada', '#2E7D32');
 }
 
 // ── SUPABASE SYNC ─────────────────────────────────────────
