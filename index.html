@@ -350,9 +350,12 @@
       </div>
     </div>
     <div class="scan-actions">
-      <button class="btn-scan" onclick="triggerCamera()">
+      <button class="btn-scan" onclick="triggerCameraCapture()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Hacer foto / Subir imagen
+        📷 Hacer foto
+      </button>
+      <button class="btn-scan" style="background:rgba(255,255,255,0.15);margin-top:0" onclick="triggerGallery()">
+        🖼️ Subir de galería
       </button>
       <button class="btn-outline" onclick="closeScanner()">Cancelar</button>
     </div>
@@ -385,7 +388,8 @@
   </div>
 
   <div class="error-toast" id="error-toast"></div>
-  <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="file-input-camera" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="file-input-gallery" accept="image/*" style="display:none">
 </div>
 
 <script>
@@ -421,7 +425,8 @@ let pendingImageUrl = null;
 // ── INIT ─────────────────────────────────────────────────
 function init() {
   renderUserList();
-  document.getElementById('file-input').addEventListener('change', handleFile);
+  document.getElementById('file-input-camera').addEventListener('change', handleFile);
+  document.getElementById('file-input-gallery').addEventListener('change', handleFile);
 }
 
 function renderUserList() {
@@ -630,15 +635,24 @@ function openScanner() {
 function closeScanner() {
   document.getElementById('scanner-overlay').classList.add('hidden');
 }
+function triggerCameraCapture() {
+  closeScanner();
+  document.getElementById('file-input-camera').click();
+}
+function triggerGallery() {
+  closeScanner();
+  document.getElementById('file-input-gallery').click();
+}
 function triggerCamera() {
-  document.getElementById('file-input').click();
+  closeScanner();
+  document.getElementById('file-input-camera').click();
 }
 
 // ── FILE / AI PROCESSING ──────────────────────────────────
 async function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-  e.target.value = '';
+  e.target.value = ''; // reset so same file can be selected again
   closeScanner();
 
   const imageDataUrl = await fileToDataUrl(file);
@@ -671,20 +685,42 @@ function fileToDataUrl(file) {
 }
 
 async function callClaude(b64, mimeType) {
-  const prompt = `Analiza este ticket/factura comercial español. Responde ÚNICAMENTE con JSON válido, sin markdown, sin explicaciones.
-Formato exacto:
-{"nombre":"nombre del comercio","concepto":"descripción 5 palabras max","fecha":"DD/MM/YYYY o vacío","importe_total":número,"base_imponible":número,"iva_porcentaje":número,"iva_importe":número,"categoria":"restaurantes|gasolina|transporte|moda|textil|supermercado|otros","iva_deducible_pct":número,"razonamiento":"por qué esta categoría en 1 frase"}
+  const prompt = `Eres un experto contable español con 20 años de experiencia. Analiza este ticket o factura LEYENDO TODO EL CONTENIDO visible — no te bases solo en el nombre del comercio, sino en QUÉ SERVICIO O PRODUCTO se describe en el ticket.
 
-Reglas de categorización:
-- restaurantes: bares, restaurantes, cafeterías, comida, catering, hostelería
-- gasolina: estaciones de servicio, combustible, gasolineras (Repsol, Cepsa, BP, etc)
-- transporte: taxi, uber, cabify, bus, metro, tren, parking, peaje
-- moda: Zara, H&M, ropa acabada, accesorios personales, calzado
-- textil: tejidos, telas, pasamanería, materiales textiles, proveedores de tejido
-- supermercado: Mercadona, Lidl, Carrefour, Dia, productos alimentarios generales
-- otros: cualquier otra categoría
+REGLA FUNDAMENTAL: Lee la descripción de los artículos/servicios del ticket para categorizar. El mismo comercio puede tener categorías distintas según lo que se compre. Ejemplo: "Naturwash" puede ser lavandería de ropa (→ moda) O lavado de coche (→ transporte) — solo el contenido del ticket lo determina.
 
-IVA deducible en España: gasolina=100%, transporte=100%, textil=100%, moda=100%, restaurantes=50%, supermercado=variable`;
+Responde ÚNICAMENTE con JSON válido sin markdown ni texto extra:
+{"nombre":"nombre exacto del comercio","concepto":"descripción del producto/servicio en 5 palabras","fecha":"DD/MM/YYYY o vacío","importe_total":número,"base_imponible":número,"iva_porcentaje":número,"iva_importe":número,"categoria":"categoría según reglas","iva_deducible_pct":número,"razonamiento":"qué dice el ticket que justifica esta categoría"}
+
+═══ CATEGORÍAS — BASADAS EN EL SERVICIO/PRODUCTO, NO EN EL NOMBRE DEL COMERCIO ═══
+
+🍽️ restaurantes → el ticket describe comida, bebida, menús, tapas, cafés, desayunos, almuerzos, cenas, servicio de restauración, delivery de comida.
+
+⛽ gasolina → el ticket describe combustible (gasolina 95/98, diésel, gasóleo), carga eléctrica de vehículo, AdBlue.
+
+🚗 transporte → el ticket describe: desplazamiento de personas (taxi, Uber, bus, tren, metro, AVE), parking, peaje, alquiler de vehículo, lavado o limpieza de coche/vehículo, ITV, mantenimiento de vehículo.
+
+👔 moda → el ticket describe: prendas de ropa acabada, calzado, accesorios personales (bolsos, cinturones, corbatas), lavado o planchado de ROPA (camisas, trajes, prendas).
+
+🧵 textil → el ticket describe: telas por metros, tejidos en bruto, pasamanería, mercería, botones/cremalleras industriales, materiales para fabricación textil.
+
+🛒 supermercado → el ticket describe: alimentación, productos del hogar, limpieza doméstica, productos frescos, bebidas, conservas.
+
+🏨 alojamiento → el ticket describe: estancia en hotel, habitación, noche de alojamiento, apartamento turístico, check-in/check-out.
+
+📄 otros → el ticket describe algo que genuinamente no encaja en ninguna categoría anterior: material de oficina, servicios profesionales, software, publicidad, farmacia, electrónica, formación, etc.
+
+═══ IVA DEDUCIBLE EN ESPAÑA ═══
+- gasolina: 100%
+- transporte (incluye lavado de coche): 100%
+- textil: 100%
+- moda (incluye lavandería de ropa): 100%
+- alojamiento: 100%
+- restaurantes: 50%
+- supermercado: 21%
+- otros: 50%
+
+REGLA FINAL: Si el ticket es ambiguo, indica en "razonamiento" exactamente qué texto del ticket te llevó a esa categoría.`;
 
   const resp = await fetch('/.netlify/functions/claude', {
     method: 'POST',
