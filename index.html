@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ExpenseAI">
+<meta name="apple-mobile-web-app-title" content="Menkex">
 <meta name="theme-color" content="#1a1a2e">
 <link rel="manifest" href="manifest.json">
-<title>ExpenseAI</title>
+<title>Menkex</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -220,7 +220,7 @@ html,body{height:100%;overflow:hidden;background:#000}
     <div class="login-bg"><div class="login-orb orb1"></div><div class="login-orb orb2"></div></div>
     <div class="login-content">
       <div class="login-logo">💳</div>
-      <div class="login-title">Expense<br>AI</div>
+      <div class="login-title">MENKEX</div>
       <div class="login-sub">Gestión inteligente de gastos</div>
       <!-- Existing users -->
       <div id="user-list"></div>
@@ -273,6 +273,11 @@ html,body{height:100%;overflow:hidden;background:#000}
   <div id="tickets-screen" class="screen hidden">
     <div class="screen-header">
       <div class="screen-title">Mis Tickets</div>
+      <div style="margin-top:12px;position:relative">
+        <input id="tickets-search" type="search" placeholder="🔍  Buscar por nombre, categoría, fecha, referencia..." 
+          style="width:100%;padding:10px 14px;border-radius:10px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;font-family:'DM Sans',sans-serif;outline:none"
+          oninput="renderTickets()">
+      </div>
       <div class="filter-row" id="filter-row"></div>
     </div>
     <div class="scroll-area" id="tickets-content"></div>
@@ -411,10 +416,10 @@ const SUPABASE_KEY = 'sb_publishable_uHNalN6xCBwIIr1nAOMtaw_ixj0NHyR';
 // Users are now dynamic - loaded from localStorage
 const BRAND_COLORS = ['#6C63FF','#E91E8C','#00BCD4','#FF6B35','#2E7D32','#C62828','#1565C0','#6A1B9A'];
 function getUsers() {
-  return JSON.parse(localStorage.getItem('expenseai_users') || '[]');
+  return JSON.parse(localStorage.getItem('menkex_users') || '[]');
 }
 function saveUsers(users) {
-  localStorage.setItem('expenseai_users', JSON.stringify(users));
+  localStorage.setItem('menkex_users', JSON.stringify(users));
 }
 function getInitials(name) {
   return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().substring(0,2);
@@ -666,6 +671,8 @@ function ticketRowHtml(t) {
 function renderTickets() {
   const mine = tickets.filter(t => t.userId === currentUser.id);
   const allCats = [...new Set(mine.map(t => t.categoria))];
+  const searchEl = document.getElementById('tickets-search');
+  const query = (searchEl ? searchEl.value : '').toLowerCase().trim();
 
   document.getElementById('filter-row').innerHTML =
     `<button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">Todos</button>` +
@@ -674,10 +681,26 @@ function renderTickets() {
       return `<button class="filter-btn ${currentFilter === cat ? 'active' : ''}" onclick="setFilter('${cat}')">${c.emoji} ${c.label}</button>`;
     }).join('');
 
-  const filtered = currentFilter === 'all' ? mine : mine.filter(t => t.categoria === currentFilter);
+  let filtered = currentFilter === 'all' ? mine : mine.filter(t => t.categoria === currentFilter);
+
+  // Apply search
+  if (query) {
+    filtered = filtered.filter(t => {
+      const c = CATS[t.categoria] || CATS.otros;
+      return (
+        (t.nombre||'').toLowerCase().includes(query) ||
+        (t.concepto||'').toLowerCase().includes(query) ||
+        (t.ref||'').toLowerCase().includes(query) ||
+        (t.fecha||'').toLowerCase().includes(query) ||
+        (t.categoria||'').toLowerCase().includes(query) ||
+        c.label.toLowerCase().includes(query)
+      );
+    });
+  }
+
   document.getElementById('tickets-content').innerHTML = filtered.length
     ? filtered.slice().reverse().map(ticketRowHtml).join('')
-    : `<div style="text-align:center;padding:48px 20px;color:var(--text3)">No hay tickets</div>`;
+    : `<div style="text-align:center;padding:48px 20px;color:var(--text3)">${query ? 'Sin resultados para "'+query+'"' : 'No hay tickets'}</div>`;
 }
 
 function setFilter(f) {
@@ -686,40 +709,125 @@ function setFilter(f) {
 }
 
 // ─── STATS ───────────────────────────────────────────────
+let statsTab = 'total';
+
 function renderStats() {
   const mine = tickets.filter(t => t.userId === currentUser.id);
   const total = mine.reduce((s, t) => s + (t.importe_total || 0), 0);
   const base = mine.reduce((s, t) => s + (t.base_imponible || 0), 0);
   const iva = mine.reduce((s, t) => s + (t.iva_importe || 0), 0);
-  const catTotals = {};
-  mine.forEach(t => { catTotals[t.categoria] = (catTotals[t.categoria] || 0) + (t.importe_total || 0); });
-  const maxCat = Math.max(...Object.values(catTotals), 1);
 
-  const bars = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => {
-    const c = CATS[cat] || CATS.otros;
-    return `<div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
-        <span>${c.emoji} ${c.label}</span>
-        <span style="font-family:'DM Mono',monospace;font-weight:500">€${amt.toFixed(2)}</span>
-      </div>
-      <div style="background:var(--surface2);border-radius:4px;height:7px;overflow:hidden">
-        <div style="width:${(amt/maxCat*100).toFixed(0)}%;height:7px;border-radius:4px;background:${c.bg};border-left:3px solid ${c.text}"></div>
-      </div>
-    </div>`;
-  }).join('');
+  const summaryCards = [
+    {label:'Total gastado', value:'€'+total.toFixed(2), color:'#6C63FF', tab:'total'},
+    {label:'Importe gastos', value:'€'+total.toFixed(2), color:'#E24B4A', tab:'gastos'},
+    {label:'Nº tickets', value:''+mine.length, color:'#2E7D32', tab:'tickets'},
+    {label:'Total IVA', value:'€'+iva.toFixed(2), color:'#E65C00', tab:'iva'},
+  ];
 
-  document.getElementById('stats-content').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-      ${[['Total gastado','€'+total.toFixed(2),'#6C63FF'],['Base imponible','€'+base.toFixed(2),'#3EC6E0'],['Total IVA','€'+iva.toFixed(2),'#E65C00'],['Nº tickets',''+mine.length,'#2E7D32']].map(([l,v,col])=>`
-      <div style="background:var(--surface);border-radius:var(--radius);padding:14px;border:1px solid var(--border)">
-        <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">${l}</div>
-        <div style="font-size:22px;font-weight:600;color:${col};font-family:'DM Mono',monospace;margin-top:4px">${v}</div>
-      </div>`).join('')}
-    </div>
-    <div style="background:var(--surface);border-radius:var(--radius);padding:16px;border:1px solid var(--border)">
-      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px">Por categoría</div>
-      ${bars || '<div style="color:var(--text3);font-size:13px">Sin datos aún</div>'}
-    </div>`;
+  const summaryHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+    ${summaryCards.map(s => `
+    <div style="background:var(--surface);border-radius:var(--radius);padding:14px;border:${statsTab===s.tab?'2px solid '+s.color:'1px solid var(--border)'};cursor:pointer" onclick="setStatsTab('${s.tab}')">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">${s.label}</div>
+      <div style="font-size:22px;font-weight:600;color:${s.color};font-family:'DM Mono',monospace;margin-top:4px">${s.value}</div>
+    </div>`).join('')}
+  </div>`;
+
+  let detailHtml = '';
+
+  if (statsTab === 'total') {
+    // Total gastado: list with company name + category
+    const sorted = [...mine].sort((a,b) => (b.importe_total||0) - (a.importe_total||0));
+    detailHtml = `
+      <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">Total gastado — desglose</div>
+        ${sorted.map(t => {
+          const c = CATS[t.categoria] || CATS.otros;
+          return `<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDetail('${t.ref}')">
+            <span style="font-size:18px">${c.emoji}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.nombre||'Sin nombre'}</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:1px"><span class="badge" style="background:${c.bg};color:${c.text};font-size:10px">${c.label}</span></div>
+            </div>
+            <div style="font-size:14px;font-weight:600;font-family:'DM Mono',monospace;color:#6C63FF;flex-shrink:0">€${(t.importe_total||0).toFixed(2)}</div>
+          </div>`;
+        }).join('') || '<div style="padding:24px;text-align:center;color:var(--text3)">Sin datos</div>'}
+      </div>`;
+  }
+
+  if (statsTab === 'gastos') {
+    // Gastos en rojo y negativo con nombre + categoría
+    const sorted = [...mine].sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+    detailHtml = `
+      <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">Importe de gastos</div>
+        ${sorted.map(t => {
+          const c = CATS[t.categoria] || CATS.otros;
+          return `<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDetail('${t.ref}')">
+            <span style="font-size:18px">${c.emoji}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.nombre||'Sin nombre'}</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:1px"><span class="badge" style="background:${c.bg};color:${c.text};font-size:10px">${c.label}</span> <span style="color:var(--text3)">${t.fecha||''}</span></div>
+            </div>
+            <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:#E24B4A;flex-shrink:0">-€${(t.importe_total||0).toFixed(2)}</div>
+          </div>`;
+        }).join('') || '<div style="padding:24px;text-align:center;color:var(--text3)">Sin datos</div>'}
+      </div>`;
+  }
+
+  if (statsTab === 'tickets') {
+    // Tickets with reference numbers
+    const sorted = [...mine].sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+    detailHtml = `
+      <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px">${mine.length} ticket${mine.length!==1?'s':''}</div>
+        ${sorted.map(t => {
+          const c = CATS[t.categoria] || CATS.otros;
+          return `<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer" onclick="openDetail('${t.ref}')">
+            <div style="width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden">
+              ${t.imageDataUrl ? `<img src="${t.imageDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : c.emoji}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.nombre||'Sin nombre'}</div>
+              <div style="font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-top:2px">${t.ref}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">€${(t.importe_total||0).toFixed(2)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px">${t.fecha||''}</div>
+            </div>
+          </div>`;
+        }).join('') || '<div style="padding:24px;text-align:center;color:var(--text3)">Sin datos</div>'}
+      </div>`;
+  }
+
+  if (statsTab === 'iva') {
+    // IVA breakdown
+    const catTotals = {};
+    mine.forEach(t => { catTotals[t.categoria] = (catTotals[t.categoria]||0) + (t.iva_importe||0); });
+    const maxCat = Math.max(...Object.values(catTotals), 1);
+    detailHtml = `
+      <div style="background:var(--surface);border-radius:var(--radius);padding:16px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px">IVA por categoría</div>
+        ${Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([cat,amt]) => {
+          const c = CATS[cat]||CATS.otros;
+          return `<div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+              <span>${c.emoji} ${c.label}</span>
+              <span style="font-family:'DM Mono',monospace;font-weight:500">€${amt.toFixed(2)}</span>
+            </div>
+            <div style="background:var(--surface2);border-radius:4px;height:7px;overflow:hidden">
+              <div style="width:${(amt/maxCat*100).toFixed(0)}%;height:7px;border-radius:4px;background:${c.bg};border-left:3px solid ${c.text}"></div>
+            </div>
+          </div>`;
+        }).join('') || '<div style="color:var(--text3);font-size:13px">Sin datos</div>'}
+      </div>`;
+  }
+
+  document.getElementById('stats-content').innerHTML = summaryHtml + detailHtml;
+}
+
+function setStatsTab(tab) {
+  statsTab = tab;
+  renderStats();
 }
 
 // ─── PROFILE ─────────────────────────────────────────────
