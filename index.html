@@ -733,31 +733,34 @@ function renderStats() {
     if (entries.length === 0) {
       chartHtml = '<div style="text-align:center;color:var(--text3);padding:24px">Sin datos aún</div>';
     } else if (chartType === 'circle') {
-      let ang = -90;
-      const cx=110,cy=110,r=90;
-      const slices = entries.map(([cat,amt],i) => {
-        const pct = total>0?amt/total:0;
-        const deg = pct*360;
-        const ea = ang+deg;
-        const x1 = cx+r*Math.cos(ang*Math.PI/180);
-        const y1 = cy+r*Math.sin(ang*Math.PI/180);
-        const x2 = cx+r*Math.cos(ea*Math.PI/180);
-        const y2 = cy+r*Math.sin(ea*Math.PI/180);
-        const mid = ang+deg/2;
-        const lx = cx+(r*0.62)*Math.cos(mid*Math.PI/180);
-        const ly = cy+(r*0.62)*Math.sin(mid*Math.PI/180);
-        const large = deg>180?1:0;
-        const col = CHART_COLS[i%CHART_COLS.length];
-        ang = ea;
-        return {cat,amt,pct,x1,y1,x2,y2,lx,ly,large,col};
+      // Build pie chart with correct polar math
+      const cx = 110, cy = 110, r = 85;
+      let cumPct = 0;
+      const slices = entries.map(([cat, amt], i) => {
+        const pct = total > 0 ? amt / total : 0;
+        const startPct = cumPct;
+        cumPct += pct;
+        const startAngle = startPct * 2 * Math.PI - Math.PI / 2;
+        const endAngle = cumPct * 2 * Math.PI - Math.PI / 2;
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const large = pct > 0.5 ? 1 : 0;
+        const midAngle = (startAngle + endAngle) / 2;
+        const lx = cx + r * 0.62 * Math.cos(midAngle);
+        const ly = cy + r * 0.62 * Math.sin(midAngle);
+        const col = CHART_COLS[i % CHART_COLS.length];
+        return { cat, amt, pct, x1, y1, x2, y2, large, lx, ly, col };
       });
+
       const paths = slices.map(s =>
-        `<path d="M${cx},${cy} L${s.x1.toFixed(1)},${s.y1.toFixed(1)} A${r},${r} 0 ${s.large},1 ${s.x2.toFixed(1)},${s.y2.toFixed(1)} Z" fill="${s.col}" opacity="0.9" style="cursor:pointer" onclick="filterByCat('${s.cat}')"/>`
+        `<path d="M${cx},${cy} L${s.x1.toFixed(2)},${s.y1.toFixed(2)} A${r},${r} 0 ${s.large},1 ${s.x2.toFixed(2)},${s.y2.toFixed(2)} Z" fill="${s.col}" stroke="white" stroke-width="1.5" style="cursor:pointer" onclick="filterByCat('${s.cat}')"/>`
       ).join('');
-      const labels = slices.filter(s=>s.pct>0.05).map(s =>
-        `<text x="${s.lx.toFixed(1)}" y="${s.ly.toFixed(1)}" text-anchor="middle" font-size="11" fill="white" font-family="DM Sans,sans-serif" font-weight="600">${(s.pct*100).toFixed(0)}%</text>`
+      const labels = slices.filter(s => s.pct > 0.06).map(s =>
+        `<text x="${s.lx.toFixed(2)}" y="${s.ly.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="white" font-family="DM Sans,sans-serif" font-weight="600">${(s.pct * 100).toFixed(0)}%</text>`
       ).join('');
-      chartHtml = `<svg viewBox="0 0 220 220" style="width:200px;height:200px;display:block;margin:0 auto">${paths}${labels}</svg>`;
+      chartHtml = `<svg viewBox="0 0 220 220" style="width:200px;height:200px;display:block;margin:0 auto;overflow:visible">${paths}${labels}</svg>`;
     } else {
       chartHtml = entries.map(([cat,amt],i) => {
         const c = CATS[cat]||CATS.otros;
@@ -1013,11 +1016,9 @@ function discardResult() {
 
 function saveTicket() {
   if (!pendingResult) return;
-  const btn = document.getElementById('btn-save');
-  btn.disabled = true;
-  btn.textContent = '✓ Guardando...';
   const r = pendingResult;
-  pendingResult = null;
+  pendingResult = null; // clear first to prevent double tap
+
   const ref = 'T' + Date.now().toString(36).toUpperCase();
   const t = {
     ref, userId:CU.id, userName:CU.name,
@@ -1033,9 +1034,10 @@ function saveTicket() {
   localStorage.setItem('tkv3', JSON.stringify(tickets));
   syncSupabase(t);
   if(navigator.vibrate) navigator.vibrate(60);
+  // Close overlay IMMEDIATELY, then render in background
   document.getElementById('result-ov').classList.add('hidden');
-  renderHome();
   toast('✓ Ticket guardado · '+ref, '#2E7D32');
+  setTimeout(() => renderHome(), 50);
 }
 
 function today() {
@@ -1072,14 +1074,15 @@ function closeDetail() { document.getElementById('det-bg').classList.add('hidden
 
 function saveCategory(ref) {
   const sel = document.getElementById('csel-'+ref);
-  const btn = document.getElementById('bcat-'+ref);
-  if(!sel||!btn) return;
-  btn.disabled = true;
-  btn.textContent = '✓ Guardado';
+  if(!sel) return;
   if(navigator.vibrate) navigator.vibrate(50);
+  const newCat = sel.value;
   const idx = tickets.findIndex(t=>t.ref===ref);
-  if(idx!==-1){ tickets[idx].categoria = sel.value; localStorage.setItem('tkv3',JSON.stringify(tickets)); }
-  setTimeout(()=>{ closeDetail(); refreshCurrent(); toast('✓ Categoría cambiada a '+(CATS[sel.value]?.label||sel.value),'#2E7D32'); },350);
+  if(idx!==-1){ tickets[idx].categoria = newCat; localStorage.setItem('tkv3',JSON.stringify(tickets)); }
+  // Close immediately, then refresh and show toast
+  closeDetail();
+  toast('✓ Categoría cambiada a '+(CATS[newCat]?.label||newCat),'#2E7D32');
+  setTimeout(() => refreshCurrent(), 50);
 }
 
 function dlPhoto(ref) {
