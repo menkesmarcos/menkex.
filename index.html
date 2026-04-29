@@ -42,6 +42,7 @@ html,body{height:100%;overflow:hidden;background:#fff;font-family:var(--font)}
 @keyframes splash-out{from{opacity:1}to{opacity:0}}
 
 /* ── SPLASH ── */
+#splash-screen:not(.hidden){display:flex!important;flex-direction:column}
 #splash-screen{background:#fff;align-items:center;justify-content:center}
 #splash-screen img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
 #splash-btn{
@@ -346,7 +347,7 @@ html,body{height:100%;overflow:hidden;background:#fff;font-family:var(--font)}
 <div id="app">
 
 <!-- ── SPLASH ── -->
-<div id="splash-screen" class="screen" style="display:flex;flex-direction:column">
+<div id="splash-screen" class="screen splash-flex">
   <img src="splash.jpg" alt="Menkex" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
   <div style="flex:0 0 72%"></div>
   <div style="position:relative;z-index:1;padding:0 24px 40px;display:flex;justify-content:center">
