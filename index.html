@@ -222,8 +222,37 @@ html,body{height:100%;overflow:hidden;background:#000}
       <div class="login-logo">💳</div>
       <div class="login-title">Expense<br>AI</div>
       <div class="login-sub">Gestión inteligente de gastos</div>
-      <div class="user-list" id="user-list"></div>
+      <!-- Existing users -->
+      <div id="user-list"></div>
+      <!-- New user button -->
+      <button id="show-create-btn" onclick="showCreateUser()" style="width:100%;padding:13px;background:rgba(255,255,255,0.07);border:1px dashed rgba(255,255,255,0.25);border-radius:var(--radius);color:rgba(255,255,255,0.6);font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:12px;display:none">+ Añadir nuevo usuario</button>
       <button class="btn-login" id="login-btn" disabled onclick="doLogin()">Entrar →</button>
+    </div>
+  </div>
+
+  <!-- CREATE USER SHEET -->
+  <div class="sheet-overlay hidden" id="create-user-sheet">
+    <div class="sheet-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div><div class="sheet-title">Nuevo usuario</div><div class="sheet-sub" style="margin-bottom:0">Rellena tus datos</div></div>
+        <button class="detail-close" onclick="hideCreateUser()">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Nombre completo</label>
+          <input id="new-name" type="text" placeholder="Ej: Marcos Campelo" style="width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none" oninput="validateCreateForm()">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Número de tarjeta</label>
+          <input id="new-card" type="text" placeholder="Ej: 4521 8834 2291 7834" maxlength="19" style="width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);font-size:15px;font-family:'DM Mono',monospace;color:var(--text);outline:none;letter-spacing:2px" oninput="formatCard(this);validateCreateForm()">
+          <div id="card-brand-preview" style="font-size:12px;color:var(--accent);margin-top:6px;height:16px"></div>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Límite mensual (€)</label>
+          <input id="new-limit" type="number" placeholder="Ej: 2000" value="2000" style="width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);font-size:15px;font-family:'DM Mono',monospace;color:var(--text);outline:none" oninput="validateCreateForm()">
+        </div>
+        <button class="btn-save-cat" id="create-user-btn" disabled onclick="createUser()" style="margin-top:4px;padding:15px;font-size:16px">Crear usuario y entrar →</button>
+      </div>
     </div>
   </div>
 
@@ -351,6 +380,21 @@ html,body{height:100%;overflow:hidden;background:#000}
     </div>
   </div>
 
+  <!-- CONFIRM DELETE ACCOUNT DIALOG -->
+  <div class="dialog-overlay hidden" id="delete-account-dialog">
+    <div class="dialog-box">
+      <div class="dialog-body">
+        <div class="dialog-icon">👤</div>
+        <div class="dialog-title">¿Eliminar tu usuario?</div>
+        <div class="dialog-text">Se eliminarán todos tus tickets y datos. Esta acción no se puede deshacer.</div>
+      </div>
+      <div class="dialog-buttons">
+        <button class="btn-cancel-dialog" onclick="document.getElementById('delete-account-dialog').classList.add('hidden')">Cancelar</button>
+        <button class="btn-confirm-delete" onclick="executeDeleteAccount()">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
@@ -364,11 +408,24 @@ html,body{height:100%;overflow:hidden;background:#000}
 const SUPABASE_URL = 'https://nkhshchyiczmflyvmqez.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_uHNalN6xCBwIIr1nAOMtaw_ixj0NHyR';
 
-const USERS = [
-  {id:'marcos', name:'Marcos Campelo', initials:'MC', color:'#6C63FF', limit:2000, card:'4521', brand:'VISA'},
-  {id:'begona', name:'Begoña García',  initials:'BG', color:'#E91E8C', limit:1500, card:'7834', brand:'MC'},
-  {id:'jacobo', name:'Jacobo Ruiz',    initials:'JC', color:'#00BCD4', limit:2000, card:'2291', brand:'VISA'},
-];
+// Users are now dynamic - loaded from localStorage
+const BRAND_COLORS = ['#6C63FF','#E91E8C','#00BCD4','#FF6B35','#2E7D32','#C62828','#1565C0','#6A1B9A'];
+function getUsers() {
+  return JSON.parse(localStorage.getItem('expenseai_users') || '[]');
+}
+function saveUsers(users) {
+  localStorage.setItem('expenseai_users', JSON.stringify(users));
+}
+function getInitials(name) {
+  return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().substring(0,2);
+}
+function detectBrand(cardNum) {
+  const n = cardNum.replace(/\s/g,'');
+  if (n.startsWith('4')) return 'VISA';
+  if (n.startsWith('5') || n.startsWith('2')) return 'MC';
+  if (n.startsWith('3')) return 'AMEX';
+  return 'VISA';
+}
 
 const CATS = {
   restaurantes:{label:'Restaurantes',emoji:'🍽️',bg:'#EDE9FF',text:'#5B4ECC'},
@@ -400,26 +457,44 @@ window.addEventListener('DOMContentLoaded', () => {
   // Check auto-login
   const last = localStorage.getItem('lastUser');
   if (last) {
-    const u = USERS.find(u => u.id === last);
+    const u = getUsers().find(u => u.id === last);
     if (u) { currentUser = u; showScreen('home'); renderHome(); return; }
   }
+  renderUserList();
   showScreen('login');
 });
 
-// ─── LOGIN ───────────────────────────────────────────────
+// ─── LOGIN & USER MANAGEMENT ─────────────────────────────
 function renderUserList() {
-  document.getElementById('user-list').innerHTML = USERS.map(u => `
+  const users = getUsers();
+  const list = document.getElementById('user-list');
+  const addBtn = document.getElementById('show-create-btn');
+
+  if (users.length === 0) {
+    list.innerHTML = '';
+    addBtn.style.display = 'none';
+    // Show create form directly
+    showCreateUser();
+    return;
+  }
+
+  list.innerHTML = users.map(u => `
     <div class="user-option" id="uopt-${u.id}" onclick="selectUser('${u.id}')">
       <div class="u-avatar" style="background:${u.color}">${u.initials}</div>
-      <div><div class="u-name">${u.name}</div><div class="u-card-text">···· ···· ···· ${u.card} · ${u.brand}</div></div>
+      <div>
+        <div class="u-name">${u.name}</div>
+        <div class="u-card-text">···· ···· ···· ${u.card4} · ${u.brand}</div>
+      </div>
       <span class="u-check">✓</span>
-    </div>`).join('');
+    </div>`).join('') + '<div style="margin-bottom:10px"></div>';
+
+  addBtn.style.display = 'block';
 }
 
 function selectUser(id) {
   document.querySelectorAll('.user-option').forEach(el => el.classList.remove('selected'));
   document.getElementById('uopt-' + id)?.classList.add('selected');
-  currentUser = USERS.find(u => u.id === id);
+  currentUser = getUsers().find(u => u.id === id);
   document.getElementById('login-btn').disabled = false;
 }
 
@@ -433,7 +508,65 @@ function doLogin() {
 function logout() {
   currentUser = null;
   localStorage.removeItem('lastUser');
+  renderUserList();
   showScreen('login');
+}
+
+// Create user
+function showCreateUser() {
+  document.getElementById('create-user-sheet').classList.remove('hidden');
+}
+function hideCreateUser() {
+  document.getElementById('create-user-sheet').classList.add('hidden');
+}
+
+function formatCard(input) {
+  let v = input.value.replace(/\D/g,'').substring(0,16);
+  v = v.replace(/(\d{4})(?=\d)/g,'$1 ');
+  input.value = v;
+  const brand = detectBrand(v);
+  const preview = document.getElementById('card-brand-preview');
+  if (v.replace(/\s/g,'').length >= 1) {
+    preview.textContent = brand === 'VISA' ? '💳 VISA detectada' : brand === 'MC' ? '💳 Mastercard detectada' : brand === 'AMEX' ? '💳 American Express detectada' : '';
+  } else {
+    preview.textContent = '';
+  }
+}
+
+function validateCreateForm() {
+  const name = document.getElementById('new-name').value.trim();
+  const card = document.getElementById('new-card').value.replace(/\s/g,'');
+  const limit = document.getElementById('new-limit').value;
+  const btn = document.getElementById('create-user-btn');
+  btn.disabled = !(name.length >= 2 && card.length >= 4 && limit > 0);
+}
+
+function createUser() {
+  const name = document.getElementById('new-name').value.trim();
+  const cardFull = document.getElementById('new-card').value.replace(/\s/g,'');
+  const limit = parseFloat(document.getElementById('new-limit').value) || 2000;
+  const brand = detectBrand(cardFull);
+  const card4 = cardFull.slice(-4);
+  const users = getUsers();
+  const colorIdx = users.length % BRAND_COLORS.length;
+  const newUser = {
+    id: 'u' + Date.now(),
+    name,
+    initials: getInitials(name),
+    color: BRAND_COLORS[colorIdx],
+    limit,
+    card4,
+    cardFull,
+    brand,
+  };
+  users.push(newUser);
+  saveUsers(users);
+  hideCreateUser();
+  currentUser = newUser;
+  localStorage.setItem('lastUser', newUser.id);
+  showScreen('home');
+  renderHome();
+  if (navigator.vibrate) navigator.vibrate(60);
 }
 
 // ─── SCREEN NAVIGATION ───────────────────────────────────
@@ -469,7 +602,7 @@ function renderHome() {
       <div class="card-chip" style="margin-top:4px">
         <div style="width:22px;height:22px;border-radius:50%;background:${u.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">${u.initials}</div>
         ${brandHtml}
-        <span style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'DM Mono',monospace">···${u.card}</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'DM Mono',monospace">···${u.card4||u.card||'????'}</span>
       </div>
     </div>
     <div class="balance-block">
@@ -598,7 +731,7 @@ function renderProfile() {
     <div style="text-align:center;padding:24px 0 28px">
       <div style="width:72px;height:72px;border-radius:50%;background:${u.color};display:inline-flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;color:#fff;margin-bottom:12px">${u.initials}</div>
       <div style="font-size:20px;font-weight:600">${u.name}</div>
-      <div style="font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:4px">${u.brand} ···· ···· ···· ${u.card}</div>
+      <div style="font-size:13px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:4px">${u.brand} ···· ···· ···· ${u.card4||u.card||'????'}</div>
     </div>
     <div class="profile-section">
       ${[['Límite mensual','€'+u.limit],['Gastado este mes','€'+spent.toFixed(2)],['Disponible','€'+(u.limit-spent).toFixed(2)],['Tickets subidos',''+mine.length]].map(([l,v])=>`
@@ -606,6 +739,7 @@ function renderProfile() {
     </div>
     <div class="profile-section">
       <div class="profile-row" style="cursor:pointer" onclick="logout()"><span style="font-size:14px;color:#E24B4A">Cerrar sesión</span><span>→</span></div>
+      <div class="profile-row" style="cursor:pointer" onclick="confirmDeleteAccount()"><span style="font-size:14px;color:#E24B4A">Eliminar mi usuario</span><span>→</span></div>
     </div>`;
 }
 
@@ -843,6 +977,7 @@ function openDetail(ref) {
         <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">Cambiar categoría</div>
         <select class="cat-select" id="cat-sel-${t.ref}">${catOptions}</select>
         <button class="btn-save-cat" id="btn-cat-${t.ref}" onclick="saveCategory('${t.ref}')">Guardar categoría</button>
+        ${t.imageDataUrl ? `<button onclick="downloadPhoto('${t.ref}')" style="width:100%;padding:13px;background:none;border:1.5px solid var(--accent);color:var(--accent);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px">📥 Guardar foto en dispositivo</button>` : ''}
         <button class="btn-delete" onclick="confirmDelete('${t.ref}')">🗑️ Eliminar este ticket</button>
       </div>
     </div>`;
@@ -909,6 +1044,20 @@ function renderCurrentTab() {
   if (id === 'stats-screen') renderStats();
 }
 
+// ─── DOWNLOAD PHOTO ──────────────────────────────────────
+function downloadPhoto(ref) {
+  const t = tickets.find(t => t.ref === ref);
+  if (!t || !t.imageDataUrl) return;
+  const a = document.createElement('a');
+  a.href = t.imageDataUrl;
+  a.download = 'ticket_' + ref + '_' + (t.nombre || 'foto').replace(/[^a-zA-Z0-9]/g,'_') + '.jpg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  if (navigator.vibrate) navigator.vibrate(40);
+  showToast('📥 Foto guardada en tu dispositivo', '#2E7D32');
+}
+
 // ─── SUPABASE SYNC ────────────────────────────────────────
 async function syncToSupabase(ticket) {
   try {
@@ -925,6 +1074,22 @@ async function syncToSupabase(ticket) {
       body: JSON.stringify(body)
     });
   } catch(e) { console.warn('Supabase sync:', e); }
+}
+
+// ─── DELETE ACCOUNT ──────────────────────────────────────
+function confirmDeleteAccount() {
+  document.getElementById('delete-account-dialog').classList.remove('hidden');
+}
+function executeDeleteAccount() {
+  if (!currentUser) return;
+  // Remove user's tickets
+  tickets = tickets.filter(t => t.userId !== currentUser.id);
+  localStorage.setItem('tickets_v2', JSON.stringify(tickets));
+  // Remove user from users list
+  const users = getUsers().filter(u => u.id !== currentUser.id);
+  saveUsers(users);
+  document.getElementById('delete-account-dialog').classList.add('hidden');
+  logout();
 }
 
 // ─── TOAST ────────────────────────────────────────────────
