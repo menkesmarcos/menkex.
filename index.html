@@ -593,13 +593,9 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('inp-gal').addEventListener('change', handleFile);
   document.getElementById('det-bg').addEventListener('click', e => { if (e.target === document.getElementById('det-bg')) closeDetail(); });
 
-  const last = localStorage.getItem('lastUser');
-  if (last) {
-    const u = getUsers().find(u => u.id === last);
-    if (u) { CU = u; showScreen('home'); renderHome(); return; }
-  }
-  renderLoginScreen();
-  showScreen('login');
+  // ALWAYS show splash first — no auto-login skip
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('splash-screen').classList.remove('hidden');
 });
 
 // ════════════════════════════════════════════════════
@@ -634,6 +630,24 @@ function selectUser(id) {
   document.getElementById('uopt-' + id)?.classList.add('sel');
   CU = getUsers().find(u => u.id === id);
   document.getElementById('btn-enter').disabled = false;
+}
+
+function goToLogin() {
+  const s = document.getElementById('splash-screen');
+  s.style.transition = 'opacity 0.3s ease';
+  s.style.opacity = '0';
+  setTimeout(() => {
+    s.classList.add('hidden');
+    s.style.opacity = '';
+    s.style.transition = '';
+    const last = localStorage.getItem('lastUser');
+    if (last) {
+      const u = getUsers().find(u => u.id === last);
+      if (u) { CU = u; showScreen('home'); renderHome(); return; }
+    }
+    renderLoginScreen();
+    showScreen('login');
+  }, 300);
 }
 
 function doLogin() {
