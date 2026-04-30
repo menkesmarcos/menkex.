@@ -27,6 +27,201 @@
   --font:'DM Sans',sans-serif;
   --mono:'DM Mono',monospace;
 }
+
+/* ── DARK MODE ── */
+body.dark{
+  --fg:#EFEFEF;
+  --sub:rgba(255,255,255,0.48);
+  --sub2:rgba(255,255,255,0.32);
+  --bg:#0E0E0E;
+  --surface:#1C1C1C;
+  --surface2:#252525;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.11);
+  --red:#FF5C5C;
+  --green:#22D47A;
+  --sh1:0 1px 6px rgba(0,0,0,0.5);
+  --sh2:0 4px 20px rgba(0,0,0,0.5);
+  --sh3:0 12px 48px rgba(0,0,0,0.7);
+  --sh-p:0 6px 24px rgba(92,78,229,0.45);
+}
+
+/* Global text */
+body.dark,body.dark *{-webkit-font-smoothing:antialiased}
+
+/* Nav */
+body.dark .bnav{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .ni{color:rgba(255,255,255,0.3)}
+body.dark .ni.active{color:var(--accent)}
+body.dark .fab{background:#fff}
+body.dark .fab svg path,body.dark .fab svg rect{stroke:#0E0E0E}
+
+/* Home header */
+body.dark .app-hdr,body.dark .home-top{background:#0E0E0E}
+body.dark .home-name{color:#EFEFEF}
+body.dark .home-date{color:rgba(255,255,255,0.35)}
+body.dark .bal-card{background:linear-gradient(135deg,#1e1a60 0%,#2d2080 100%)}
+body.dark .bal-card-chip{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7)}
+body.dark .bal-mono-lbl{color:rgba(255,255,255,0.4)}
+body.dark .bal-amount{color:#fff}
+body.dark .bal-euro,.bal-cents{color:rgba(255,255,255,0.6)}
+body.dark .bal-prog-labels{color:rgba(255,255,255,0.35)}
+
+/* Quick stats & KPIs */
+body.dark .qs-card{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .skpi{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .qs-lbl{color:rgba(255,255,255,0.35)}
+body.dark .qs-val{color:#EFEFEF}
+body.dark .skpi-lbl{color:rgba(255,255,255,0.35)}
+body.dark .skpi-val{color:#EFEFEF}
+
+/* Section headers */
+body.dark .sec-mono{color:rgba(255,255,255,0.35)}
+body.dark .sec-link{color:var(--accent);background:none;border:none;outline:none;box-shadow:none}
+
+/* Category rows */
+body.dark .cat-row{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .cat-row-name{color:#EFEFEF}
+body.dark .cat-row-pct{color:rgba(255,255,255,0.35)}
+body.dark .cat-row-amt{color:#EFEFEF}
+body.dark .cat-bar-wrap{background:rgba(255,255,255,0.06)}
+
+/* Ticket rows */
+body.dark .tcard-boxed{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .tname{color:#EFEFEF}
+body.dark .tref{color:#9D8FFF}
+body.dark .tdate{color:rgba(255,255,255,0.35)}
+body.dark .tamt{color:#EFEFEF}
+body.dark .tthumb{background:#252525}
+body.dark .date-group-inner{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .date-lbl{color:rgba(255,255,255,0.35)}
+body.dark .date-total{color:rgba(255,255,255,0.35)}
+
+/* Screen headers */
+body.dark .shdr{background:#0E0E0E;border-color:rgba(255,255,255,0.07)}
+body.dark .shdr-title{color:#EFEFEF}
+body.dark .shdr-count{color:rgba(255,255,255,0.35)}
+body.dark .search-input{background:#1C1C1C;border-color:rgba(255,255,255,0.1);color:#EFEFEF}
+body.dark .search-input::placeholder{color:rgba(255,255,255,0.25)}
+body.dark .srch-ic svg{stroke:rgba(255,255,255,0.3)}
+body.dark .fbtn{background:#1C1C1C;border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)}
+body.dark .fbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Stats */
+body.dark .hero-stat{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .hero-lbl{color:rgba(255,255,255,0.35)}
+body.dark .hero-val{color:#EFEFEF}
+body.dark .cat-breakdown > .cat-bd-row .cat-bd-hdr span:first-child > span:last-child{color:#EFEFEF}
+body.dark .cat-bd-track{background:rgba(255,255,255,0.07)}
+
+/* Profile */
+body.dark .prof-card{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .prof-name{color:#EFEFEF}
+body.dark .prof-card-num{color:rgba(255,255,255,0.4)}
+body.dark .psec{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .prow{border-color:rgba(255,255,255,0.07)}
+body.dark .prow:active{background:#252525}
+body.dark .prow-lbl{color:#EFEFEF}
+body.dark .prow-val{color:rgba(255,255,255,0.4)}
+
+/* Login */
+body.dark #login-screen{background:#0E0E0E}
+body.dark .login-wordmark{color:#EFEFEF}
+body.dark .login-h1{color:#EFEFEF}
+body.dark .login-sub{color:rgba(255,255,255,0.4)}
+body.dark .profiles-lbl{color:rgba(255,255,255,0.3)}
+body.dark .user-opt{background:#1C1C1C;border-color:rgba(255,255,255,0.1)}
+body.dark .user-opt.sel{background:#1e1a50;border-color:var(--accent)}
+body.dark .uname{color:#EFEFEF}
+body.dark .ucard-txt{color:rgba(255,255,255,0.35)}
+body.dark .btn-new-user{border-color:rgba(255,255,255,0.12);color:rgba(255,255,255,0.4)}
+
+/* Sheets */
+body.dark .sheet{background:#1C1C1C}
+body.dark #create-user-inner{background:#1C1C1C}
+body.dark .sheet-handle{background:rgba(255,255,255,0.12)}
+body.dark .sheet-title{color:#EFEFEF}
+body.dark .sheet-subtitle{color:rgba(255,255,255,0.45)}
+body.dark .sheet-close{background:#2A2A2A;color:rgba(255,255,255,0.5)}
+body.dark .scan-btn-primary{background:#1e1a60;color:#fff}
+body.dark .scan-btn-primary .scan-btn-lbl{color:#fff}
+body.dark .scan-btn-primary .scan-btn-sub{color:rgba(255,255,255,0.6)}
+body.dark .scan-btn-secondary{background:#252525;border-color:rgba(255,255,255,0.1)!important;color:#EFEFEF}
+body.dark .scan-btn-secondary .scan-btn-lbl{color:#EFEFEF}
+body.dark .scan-btn-secondary .scan-btn-sub{color:rgba(255,255,255,0.45)}
+body.dark .scan-btn-cancel{color:rgba(255,255,255,0.4);border-color:rgba(255,255,255,0.1)!important}
+body.dark .scan-btn-secondary .scan-btn-icon{background:rgba(255,255,255,0.07)}
+body.dark .flabel{color:rgba(255,255,255,0.4)}
+body.dark .finput{background:#252525;border-color:rgba(255,255,255,0.1);color:#EFEFEF}
+body.dark .finput:focus{background:#2A2A2A;border-color:var(--accent)}
+body.dark #brand-hint{color:var(--accent)}
+
+/* Detail sheet */
+body.dark .det-sheet{background:#1C1C1C}
+body.dark .det-handle{background:rgba(255,255,255,0.12)}
+body.dark .det-hdr{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .det-close{background:#2A2A2A;color:rgba(255,255,255,0.5)}
+body.dark .det-headline{border-color:rgba(255,255,255,0.07)}
+body.dark .det-title-big{color:#EFEFEF}
+body.dark .det-concept{color:rgba(255,255,255,0.45)}
+body.dark .det-amount{color:#EFEFEF}
+body.dark .det-iva{color:rgba(255,255,255,0.4)}
+body.dark .dfield{border-color:rgba(255,255,255,0.07)}
+body.dark .dl{color:rgba(255,255,255,0.3)}
+body.dark .dv{color:#EFEFEF}
+body.dark .dv.accent{color:#9D8FFF}
+body.dark .det-ai-box{background:rgba(92,78,229,0.12);border-color:var(--accent)}
+body.dark .det-ai-txt{color:rgba(255,255,255,0.45)}
+body.dark .det-actions{border-color:rgba(255,255,255,0.07)}
+body.dark .sec-label-sm{color:rgba(255,255,255,0.3)}
+body.dark .cat-sel{background:#252525;border-color:rgba(255,255,255,0.1);color:#EFEFEF}
+body.dark .btn-dark{background:#EFEFEF;color:#0E0E0E}
+body.dark .btn-outline-p{border-color:var(--accent)!important;color:var(--accent)}
+body.dark .btn-outline-r{border-color:#FF5C5C!important;color:#FF5C5C}
+
+/* Result overlay */
+body.dark .result-ov{background:#0E0E0E}
+body.dark .result-hdr{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .result-title{color:#EFEFEF}
+body.dark .result-close{background:#2A2A2A;color:rgba(255,255,255,0.5)}
+body.dark .result-scroll{background:#0E0E0E}
+body.dark .result-ftr{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .rcard{background:#1C1C1C;border-color:rgba(255,255,255,0.07)}
+body.dark .rrow{border-color:rgba(255,255,255,0.06)}
+body.dark .rl{color:rgba(255,255,255,0.3)}
+body.dark .rv{color:#EFEFEF}
+body.dark .reason-box{background:rgba(92,78,229,0.12)}
+body.dark .reason-txt{color:rgba(255,255,255,0.45)}
+body.dark .btn-disc{background:#252525;color:rgba(255,255,255,0.5)}
+body.dark .btn-save{background:var(--accent)}
+body.dark .btn-enter{background:var(--accent)}
+
+/* Processing */
+body.dark .proc-ov{background:rgba(14,14,14,0.97)}
+body.dark .proc-ring-bg{border-color:rgba(255,255,255,0.07)}
+body.dark .proc-ring-inner{background:#1C1C1C;color:#EFEFEF}
+body.dark .proc-ring-inner span{color:var(--accent)}
+body.dark .proc-title{color:#EFEFEF}
+body.dark .proc-sub{color:rgba(255,255,255,0.4)}
+body.dark .pstep{color:rgba(255,255,255,0.25)}
+body.dark .pstep.done{color:var(--green)}
+body.dark .pstep.act{color:#EFEFEF}
+body.dark .pdot{background:rgba(255,255,255,0.08)}
+
+/* Dialog */
+body.dark .dlg{background:#1C1C1C}
+body.dark .dlg-title{color:#EFEFEF}
+body.dark .dlg-txt{color:rgba(255,255,255,0.45)}
+body.dark .btn-dlg-cancel{background:#252525;color:#EFEFEF}
+
+/* Badges keep their colors */
+body.dark .badge{opacity:0.9}
+
+/* Scrollbar in dark */
+body.dark ::-webkit-scrollbar{width:3px}
+body.dark ::-webkit-scrollbar-track{background:transparent}
+body.dark ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+
 html,body{height:100%;overflow:hidden;background:#fff;font-family:var(--font)}
 #app{height:100vh;max-width:430px;margin:0 auto;position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)}
@@ -451,16 +646,18 @@ html,body{height:100%;overflow:hidden;background:#fff;font-family:var(--font)}
 
 <!-- ── CREATE USER SHEET ── -->
 <div class="sheet-bg hidden" id="create-user-sheet">
-  <div class="sheet" style="max-height:90vh;display:flex;flex-direction:column;border-radius:26px 26px 0 0;padding:0">
+  <div id="create-user-inner" style="background:var(--surface);border-radius:26px 26px 0 0;height:62vh;display:flex;flex-direction:column;box-shadow:0 -4px 32px rgba(0,0,0,0.12)">
     <!-- Handle draggable -->
-    <div class="sheet-handle" style="cursor:grab;flex-shrink:0"></div>
+    <div id="create-handle" style="flex-shrink:0;padding:10px 0 4px;cursor:grab;text-align:center">
+      <div style="width:32px;height:3px;background:var(--border2);border-radius:2px;display:inline-block"></div>
+    </div>
     <!-- Scrollable content -->
-    <div style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 22px env(safe-area-inset-bottom,32px);flex:1">
-      <div class="sheet-hdr" style="position:sticky;top:0;background:var(--surface);padding-top:4px;padding-bottom:8px;z-index:2;margin-bottom:0">
-        <div class="sheet-title">Nuevo perfil</div>
-        <button class="sheet-close" onclick="closeCreateUser()">✕</button>
+    <div style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 22px env(safe-area-inset-bottom,24px);flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;padding-top:4px">
+        <div style="font-size:18px;font-weight:700;color:var(--fg);letter-spacing:-0.02em">Nuevo perfil</div>
+        <button onclick="closeCreateUser()" style="background:var(--surface2);border:none;width:28px;height:28px;border-radius:14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--sub);display:flex;align-items:center;justify-content:center">✕</button>
       </div>
-      <div class="sheet-subtitle" style="margin-top:2px">Rellena tus datos para empezar</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:14px">Rellena tus datos para empezar</div>
       <label class="flabel">Nombre completo</label>
       <input class="finput" id="inp-name" type="text" placeholder="Ej: Marcos Campelo" oninput="validateCreate()">
       <label class="flabel">Número de tarjeta</label>
@@ -468,7 +665,7 @@ html,body{height:100%;overflow:hidden;background:#fff;font-family:var(--font)}
       <div id="brand-hint" style="font-size:12px;color:var(--accent);margin-top:5px;height:16px;font-weight:600"></div>
       <label class="flabel">Límite mensual (€)</label>
       <input class="finput" id="inp-limit" type="number" placeholder="2000" value="2000" style="font-family:var(--mono)" oninput="validateCreate()">
-      <button class="btn-enter" id="btn-create" disabled onclick="createUser()" style="margin-top:20px;margin-bottom:8px;border-radius:13px">Crear perfil y entrar →</button>
+      <button class="btn-enter" id="btn-create" disabled onclick="createUser()" style="margin-top:20px;margin-bottom:12px;border-radius:13px">Crear perfil y entrar →</button>
     </div>
   </div>
 </div>
@@ -611,6 +808,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.target === document.getElementById('det-bg')) closeDetail();
   });
 
+  // Apply saved theme
+  if (localStorage.getItem('menkex_theme') === 'dark') {
+    document.body.classList.add('dark');
+  }
+
   // Always show splash
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById('splash-screen').classList.remove('hidden');
@@ -700,8 +902,8 @@ function renderLoginScreen() {
       <div class="ucheck">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" style="display:none" id="uchk-${u.id}"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <button onclick="event.stopPropagation();confirmDeleteUser('${u.id}')" style="margin-left:6px;background:none;border:none;cursor:pointer;padding:7px;border-radius:8px;color:rgba(0,0,0,0.25);flex-shrink:0;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.color='#E5344E'" ontouchend="this.style.color='rgba(0,0,0,0.25)'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      <button onclick="event.stopPropagation();confirmDeleteUser('${u.id}')" style="margin-left:6px;background:rgba(229,52,78,0.1);border:none;cursor:pointer;padding:7px;border-radius:8px;color:#E5344E;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all 0.15s" ontouchstart="this.style.background='rgba(229,52,78,0.2)'" ontouchend="this.style.background='rgba(229,52,78,0.1)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E5344E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       </button>
     </div>`).join('');;
   addBtn.style.display = 'flex';
@@ -780,6 +982,12 @@ function createUser() {
   if (navigator.vibrate) navigator.vibrate(50);
   showScreen('home');
   renderHome();
+}
+
+function toggleDark() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('menkex_theme', isDark ? 'dark' : 'light');
+  renderProfile(); // re-render to update toggle state
 }
 
 function logout() { CU = null; localStorage.removeItem('lastUser'); renderLoginScreen(); showScreen('login'); }
@@ -1127,6 +1335,18 @@ function renderProfile() {
         <span class="prow-lbl">${l}</span>
         <span class="prow-val" style="font-family:var(--mono)">${v}</span>
       </div>`).join('')}
+    </div>
+
+    <div class="psec">
+      <div class="prow" style="cursor:default">
+        <div>
+          <span class="prow-lbl">Tema oscuro</span>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">${document.body.classList.contains('dark') ? 'Activado' : 'Desactivado'}</div>
+        </div>
+        <div onclick="toggleDark()" style="width:48px;height:26px;border-radius:13px;background:${document.body.classList.contains('dark') ? 'var(--accent)' : 'rgba(0,0,0,0.15)'};position:relative;cursor:pointer;transition:background 0.25s;flex-shrink:0">
+          <div style="position:absolute;top:3px;left:${document.body.classList.contains('dark') ? '25px' : '3px'};width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);transition:left 0.25s"></div>
+        </div>
+      </div>
     </div>
 
     <div class="psec">
@@ -1533,11 +1753,11 @@ async function updateCatSupabase(ref, categoria) {
 // ════════════════════════════════════════════════════
 (function() {
   let startY = 0, startH = 0, dragging = false;
-  const getSheet = () => document.querySelector('#create-user-sheet .sheet');
+  const getSheet = () => document.getElementById('create-user-inner');
   const getBg = () => document.getElementById('create-user-sheet');
 
   function onStart(e) {
-    const handle = e.target.closest('.sheet-handle');
+    const handle = e.target.closest('#create-handle');
     if (!handle) return;
     dragging = true;
     startY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1549,8 +1769,8 @@ async function updateCatSupabase(ref, categoria) {
     if (!dragging) return;
     const y = e.touches ? e.touches[0].clientY : e.clientY;
     const delta = startY - y; // positive = dragging up = taller
-    const newH = Math.min(Math.max(startH + delta, 200), window.innerHeight * 0.92);
-    getSheet().style.maxHeight = newH + 'px';
+    const newH = Math.min(Math.max(startH + delta, 220), window.innerHeight * 0.92);
+    getSheet().style.height = newH + 'px';
     e.preventDefault();
   }
   function onEnd(e) {
@@ -1561,7 +1781,7 @@ async function updateCatSupabase(ref, categoria) {
     // If dragged down below 180px, close
     if (h < 180) {
       closeCreateUser();
-      sheet.style.maxHeight = '90vh';
+      sheet.style.height = '62vh';
     }
   }
   document.addEventListener('touchstart', onStart, { passive: false });
