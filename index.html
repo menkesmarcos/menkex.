@@ -809,13 +809,12 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.target === document.getElementById('det-bg')) closeDetail();
   });
 
-  // Apply saved theme
-  const savedTheme = localStorage.getItem('menkex_theme');
-  if (savedTheme === 'dark') {
+  // Splash always white regardless of theme
+  document.getElementById('theme-color-meta').setAttribute('content', '#ffffff');
+  document.documentElement.style.background = '#ffffff';
+  // Apply theme class silently (no theme-color change yet)
+  if (localStorage.getItem('menkex_theme') === 'dark') {
     document.body.classList.add('dark');
-    applyThemeColor(true);
-  } else {
-    applyThemeColor(false);
   }
 
   // Always show splash
@@ -847,6 +846,7 @@ function goToLogin() {
         return;
       }
     }
+    applyThemeColor(document.body.classList.contains('dark'));
     renderLoginScreen();
     showScreen('login');
   }, 300);
