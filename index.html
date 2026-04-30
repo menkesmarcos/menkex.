@@ -455,21 +455,25 @@ html,body{height:100%;overflow:hidden;background:#fff;font-family:var(--font)}
 
 <!-- ── CREATE USER SHEET ── -->
 <div class="sheet-bg hidden" id="create-user-sheet">
-  <div class="sheet" style="padding-bottom:env(safe-area-inset-bottom,36px)">
-    <div class="sheet-handle"></div>
-    <div class="sheet-hdr">
-      <div class="sheet-title">Nuevo perfil</div>
-      <button class="sheet-close" onclick="closeCreateUser()">✕</button>
+  <div class="sheet" style="max-height:90vh;display:flex;flex-direction:column;border-radius:26px 26px 0 0;padding:0">
+    <!-- Handle draggable -->
+    <div class="sheet-handle" style="cursor:grab;flex-shrink:0"></div>
+    <!-- Scrollable content -->
+    <div style="overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 22px env(safe-area-inset-bottom,32px);flex:1">
+      <div class="sheet-hdr" style="position:sticky;top:0;background:var(--surface);padding-top:4px;padding-bottom:8px;z-index:2;margin-bottom:0">
+        <div class="sheet-title">Nuevo perfil</div>
+        <button class="sheet-close" onclick="closeCreateUser()">✕</button>
+      </div>
+      <div class="sheet-subtitle" style="margin-top:2px">Rellena tus datos para empezar</div>
+      <label class="flabel">Nombre completo</label>
+      <input class="finput" id="inp-name" type="text" placeholder="Ej: Marcos Campelo" oninput="validateCreate()">
+      <label class="flabel">Número de tarjeta</label>
+      <input class="finput" id="inp-card" type="text" placeholder="4521 8834 2291 7834" maxlength="19" style="font-family:var(--mono);letter-spacing:2px" oninput="fmtCard(this);validateCreate()">
+      <div id="brand-hint" style="font-size:12px;color:var(--accent);margin-top:5px;height:16px;font-weight:600"></div>
+      <label class="flabel">Límite mensual (€)</label>
+      <input class="finput" id="inp-limit" type="number" placeholder="2000" value="2000" style="font-family:var(--mono)" oninput="validateCreate()">
+      <button class="btn-enter" id="btn-create" disabled onclick="createUser()" style="margin-top:20px;margin-bottom:8px;border-radius:13px">Crear perfil y entrar →</button>
     </div>
-    <div class="sheet-subtitle">Rellena tus datos para empezar</div>
-    <label class="flabel">Nombre completo</label>
-    <input class="finput" id="inp-name" type="text" placeholder="Ej: Marcos Campelo" oninput="validateCreate()">
-    <label class="flabel">Número de tarjeta</label>
-    <input class="finput" id="inp-card" type="text" placeholder="4521 8834 2291 7834" maxlength="19" style="font-family:var(--mono);letter-spacing:2px" oninput="fmtCard(this);validateCreate()">
-    <div id="brand-hint" style="font-size:12px;color:var(--accent);margin-top:5px;height:16px;font-weight:600"></div>
-    <label class="flabel">Límite mensual (€)</label>
-    <input class="finput" id="inp-limit" type="number" placeholder="2000" value="2000" style="font-family:var(--mono)" oninput="validateCreate()">
-    <button class="btn-enter" id="btn-create" disabled onclick="createUser()" style="margin-top:16px;border-radius:13px">Crear perfil y entrar →</button>
   </div>
 </div>
 
@@ -1533,6 +1537,50 @@ async function updateCatSupabase(ref, categoria) {
     );
   } catch(e) { console.warn('updateCatSupabase error:', e); }
 }
+
+// ════════════════════════════════════════════════════
+// SHEET DRAG GESTURE
+// ════════════════════════════════════════════════════
+(function() {
+  let startY = 0, startH = 0, dragging = false;
+  const getSheet = () => document.querySelector('#create-user-sheet .sheet');
+  const getBg = () => document.getElementById('create-user-sheet');
+
+  function onStart(e) {
+    const handle = e.target.closest('.sheet-handle');
+    if (!handle) return;
+    dragging = true;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    const sheet = getSheet();
+    startH = sheet.getBoundingClientRect().height;
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const delta = startY - y; // positive = dragging up = taller
+    const newH = Math.min(Math.max(startH + delta, 200), window.innerHeight * 0.92);
+    getSheet().style.maxHeight = newH + 'px';
+    e.preventDefault();
+  }
+  function onEnd(e) {
+    if (!dragging) return;
+    dragging = false;
+    const sheet = getSheet();
+    const h = sheet.getBoundingClientRect().height;
+    // If dragged down below 180px, close
+    if (h < 180) {
+      closeCreateUser();
+      sheet.style.maxHeight = '90vh';
+    }
+  }
+  document.addEventListener('touchstart', onStart, { passive: false });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', onEnd);
+  document.addEventListener('mousedown', onStart);
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onEnd);
+})();
 
 // ════════════════════════════════════════════════════
 // TOAST
